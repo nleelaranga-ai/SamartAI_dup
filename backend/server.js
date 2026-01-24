@@ -9,88 +9,110 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
-// --- 1. MEMORY STORAGE (Simple In-Memory Session) ---
-// In a real startup, you'd use a database like MongoDB.
-// For this demo, we store chat history here.
+// Memory Storage
 const chatSessions = {}; 
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-// --- 2. THE MASTER DATABASE (17+ Schemes) ---
+// 🛠️ FIX: Changed model name to the specific stable version
+// 'gemini-1.5-flash-001' is more reliable than 'gemini-1.5-flash'
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-001" });
+
 const SCHOLARSHIP_DB = [
-  // General & SC/ST/BC
-  { name: "Jagananna Vidya Deevena (RTF)", details: "Full fee reimbursement for ITI, B.Tech, MBA. Income < 2.5L." },
-  { name: "Jagananna Vasathi Deevena (MTF)", details: "₹20,000/year for hostel/food. Income < 2.5L." },
-  { name: "Ambedkar Overseas Vidya Nidhi", details: "₹15 Lakhs for SC/ST students studying abroad. Income < 6L." },
-  { name: "NSP Post Matric", details: "Central scholarship for Minority students (Muslim/Christian/etc). Income < 2L." },
-  
-  // Brahmin Welfare
-  { name: "Bharati Scheme (Education)", details: "₹20,000 for Brahmin students in B.Tech/Degree. Income < 3L." },
-  { name: "Veda Vyasa Scheme", details: "₹5,000/year for Vedic students. Income < 3L." },
-  { name: "Bharati Overseas", details: "Up to ₹20 Lakhs for Brahmin students studying abroad." },
-
-  // Disabled & Workers
-  { name: "Free Laptops Scheme", details: "Free laptop for Differently Abled professional students. Income < 3L." },
-  { name: "Motorized Three Wheelers", details: "Free vehicle for Orthopedically challenged. Income < 3L." },
-  { name: "BOC Workers Scholarship", details: "₹20,000 for children of construction workers." }
+  { 
+    name: "Jagananna Vidya Deevena (RTF)", 
+    category: "All (SC/ST/BC/Kapu/Minority)", 
+    details: "Full fee reimbursement for ITI, Polytechnic, Degree, B.Tech, MBA, MCA. Income < ₹2.5L." 
+  },
+  { 
+    name: "Jagananna Vasathi Deevena (MTF)", 
+    category: "All (SC/ST/BC/Kapu/Minority)", 
+    details: "₹10,000 - ₹20,000/year for hostel & food. Degree/Engg students get ₹20K. Income < ₹2.5L." 
+  },
+  { 
+    name: "Ambedkar Overseas Vidya Nidhi", 
+    category: "SC/ST", 
+    details: "Financial aid of up to ₹15 Lakhs for SC/ST students pursuing Masters/PhD abroad. Income < ₹6L. Needs Valid Passport." 
+  },
+  { 
+    name: "NSP Post Matric Scholarship", 
+    category: "Minority", 
+    details: "Central scholarship for Minority community students (Muslim, Christian, etc.) from Class 11 to Ph.D. Income < ₹2L." 
+  },
+  { 
+    name: "Bharati Scheme (Education)", 
+    category: "Brahmin", 
+    details: "Financial assistance for Brahmin students in B.Tech, Pharmacy, or Degree. Income < ₹3L." 
+  },
+  { 
+    name: "Veda Vyasa Scheme", 
+    category: "Brahmin", 
+    details: "Annual financial assistance of ₹5,000+ for Vedic students. Income < ₹3L." 
+  },
+  { 
+    name: "Bharati Overseas Scheme", 
+    category: "Brahmin", 
+    details: "Up to ₹20 Lakhs for Brahmin students studying Masters abroad. Income < ₹6L." 
+  },
+  { 
+    name: "BOC Workers Children Scholarship", 
+    category: "Construction Workers", 
+    details: "Scholarship for children of construction workers registered with the Labour Dept. Income < ₹3L." 
+  },
+  { 
+    name: "Free Laptops Scheme", 
+    category: "Differently Abled", 
+    details: "Free Laptop for visually, hearing, or orthopedically challenged students in professional courses. Income < ₹3L." 
+  },
+  { 
+    name: "Motorized Three Wheelers", 
+    category: "Differently Abled", 
+    details: "Free motorized vehicle for orthopedically challenged persons for mobility. Income < ₹3L." 
+  }
 ];
 
-app.get('/', (req, res) => res.send('🧠 SamartAI Memory Core Online'));
+app.get('/', (req, res) => res.send('🧠 SamartAI Brain Online'));
 
 app.post('/chat', async (req, res) => {
   try {
-    const { message, userId = 'default_user' } = req.body;
-    console.log(`📩 [${userId}] says:`, message);
+    const { message, userId = 'default' } = req.body;
+    console.log(`📩 [${userId}] User:`, message);
 
-    // Initialize history for new users
-    if (!chatSessions[userId]) {
-      chatSessions[userId] = [];
-    }
-
-    // Add User Message to History
+    if (!chatSessions[userId]) chatSessions[userId] = [];
     chatSessions[userId].push({ role: "user", content: message });
+    if (chatSessions[userId].length > 8) chatSessions[userId].shift();
 
-    // Keep history manageable (last 10 messages)
-    if (chatSessions[userId].length > 10) chatSessions[userId].shift();
-
-    // --- 3. THE "CONTEXT-AWARE" PROMPT ---
-    const historyText = chatSessions[userId].map(msg => 
-      `${msg.role === 'user' ? 'USER' : 'AI'}: ${msg.content}`
-    ).join('\n');
+    const historyText = chatSessions[userId].map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n');
 
     const prompt = `
-      ROLE: You are SamartAI, an intelligent scholarship counselor.
+      SYSTEM: You are SamartAI, a scholarship counselor.
       
-      YOUR KNOWLEDGE BASE:
+      DATA:
       ${JSON.stringify(SCHOLARSHIP_DB)}
 
-      CURRENT CHAT HISTORY:
+      CHAT HISTORY:
       ${historyText}
 
       INSTRUCTIONS:
-      1. Use the CHAT HISTORY to remember the user's details (Caste, Income, Course).
-      2. If the user said "I am SC" previously, ONLY show SC schemes now.
-      3. If the user asks "Am I eligible?", check their details against the database.
-      4. If details are missing (e.g., income), ask for them politely.
-      5. Keep answers short, friendly, and use emojis.
+      1. Use HISTORY to remember user context (Caste, Income).
+      2. Match user needs to the DATA.
+      3. Be short, helpful, and use emojis.
 
-      RESPOND TO THE LAST USER MESSAGE:
+      USER: "${message}"
     `;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const replyText = response.text();
 
-    // Add AI Reply to History
     chatSessions[userId].push({ role: "ai", content: replyText });
-
-    console.log("🤖 Reply sent.");
+    
     res.json({ reply: replyText });
 
   } catch (error) {
-    console.error("❌ Error:", error);
-    res.status(500).json({ reply: "⚠️ Connection unstable. Please try again." });
+    console.error("❌ Brain Error:", error);
+    // If Flash fails again, we will fall back to 'gemini-pro' in the next step
+    res.status(500).json({ reply: "⚠️ My brain is updating. Please try again in 10 seconds." });
   }
 });
 
