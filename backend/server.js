@@ -5,15 +5,23 @@ require('dotenv').config();
 
 const app = express();
 
-// ✅ ALLOW EVERYTHING (Fixes all connection blocks)
+// 1. ALLOW ALL ORIGINS (Fixes CORS blocking)
 app.use(cors({ origin: '*' })); 
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
+
+// 2. LOGGING (So we can see requests in Render logs)
+app.use((req, res, next) => {
+  console.log(`📡 Incoming: ${req.method} ${req.url}`);
+  next();
+});
+
+// 3. GEMINI SETUP (With error handling)
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Use 'gemini-1.5-flash' - it is the fastest and cheapest
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-// Knowledge Base
 const SCHOLARSHIP_DB = [
   { name: "Jagananna Vidya Deevena", details: "Full fee reimbursement for ITI, B.Tech, MBA. Income < 2.5L." },
   { name: "Jagananna Vasathi Deevena", details: "₹20,000/year for hostel/food. Income < 2.5L." },
@@ -23,27 +31,34 @@ const SCHOLARSHIP_DB = [
   { name: "BOC Workers Scholarship", details: "₹20,000 for children of construction workers." }
 ];
 
-app.get('/', (req, res) => res.send('SamartAI Brain Online 🧠'));
+// Health Check Route
+app.get('/', (req, res) => {
+  res.send('✅ SamartAI Brain is Online!');
+});
 
 app.post('/chat', async (req, res) => {
   try {
     const { message } = req.body;
-    console.log("📩 Request:", message);
+    console.log("📩 User asked:", message);
 
     const prompt = `
-      SYSTEM: You are SamartAI.
+      SYSTEM: You are SamartAI, a scholarship assistant.
       DATA: ${JSON.stringify(SCHOLARSHIP_DB)}
       USER: "${message}"
-      INSTRUCTION: Short, friendly answer with emojis.
+      INSTRUCTION: Answer based ONLY on the DATA. Be short and friendly. Use emojis.
     `;
 
     const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const response = await result.response;
+    const text = response.text();
 
+    console.log("🤖 Reply generated successfully");
     res.json({ reply: text });
+
   } catch (error) {
-    console.error("❌ Error:", error);
-    res.status(500).json({ reply: "My brain is tired. Please try again." });
+    console.error("❌ CRITICAL ERROR:", error);
+    // Send the actual error to the frontend so we can see it
+    res.status(500).json({ reply: `Error: ${error.message}` });
   }
 });
 
