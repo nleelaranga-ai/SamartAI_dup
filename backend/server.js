@@ -5,27 +5,15 @@ require('dotenv').config();
 
 const app = express();
 
-// 1. ALLOW ALL ORIGINS (Fixes CORS issues)
-app.use(cors({
-  origin: '*', 
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type']
-}));
-
+// ✅ ALLOW EVERYTHING (Fixes all connection blocks)
+app.use(cors({ origin: '*' })); 
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
-
-// 2. LOG EVERY REQUEST (To debug connection)
-app.use((req, res, next) => {
-  console.log(`📡 Incoming Request: ${req.method} ${req.url}`);
-  next();
-});
-
-// Gemini Setup
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
+// Knowledge Base
 const SCHOLARSHIP_DB = [
   { name: "Jagananna Vidya Deevena", details: "Full fee reimbursement for ITI, B.Tech, MBA. Income < 2.5L." },
   { name: "Jagananna Vasathi Deevena", details: "₹20,000/year for hostel/food. Income < 2.5L." },
@@ -35,29 +23,24 @@ const SCHOLARSHIP_DB = [
   { name: "BOC Workers Scholarship", details: "₹20,000 for children of construction workers." }
 ];
 
-app.get('/', (req, res) => {
-  res.send('✅ SamartAI Brain is Online & Reachable!');
-});
+app.get('/', (req, res) => res.send('SamartAI Brain Online 🧠'));
 
 app.post('/chat', async (req, res) => {
   try {
     const { message } = req.body;
-    console.log("📩 User Message:", message);
+    console.log("📩 Request:", message);
 
     const prompt = `
       SYSTEM: You are SamartAI.
       DATA: ${JSON.stringify(SCHOLARSHIP_DB)}
       USER: "${message}"
-      INSTRUCTION: concise, friendly answer with emojis.
+      INSTRUCTION: Short, friendly answer with emojis.
     `;
 
     const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    const text = result.response.text();
 
-    console.log("🤖 Sending Reply");
     res.json({ reply: text });
-
   } catch (error) {
     console.error("❌ Error:", error);
     res.status(500).json({ reply: "My brain is tired. Please try again." });
