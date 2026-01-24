@@ -3,8 +3,9 @@ import { MicrophoneButton } from '../components/MicrophoneButton';
 import { ChatWindow } from '../components/ChatWindow';
 import { useAppContext } from '../context/AppContext';
 import { USER_MESSAGES } from '../constants';
+import { v4 as uuidv4 } from 'uuid';
 
-// 👇 THIS IS YOUR LIVE BACKEND URL FROM THE LOGS
+// 👇 YOUR LIVE RENDER BACKEND URL
 const BACKEND_URL = "https://samartai-dup.onrender.com"; 
 
 export const ScholarshipDiscoveryPage: React.FC = () => {
@@ -12,13 +13,16 @@ export const ScholarshipDiscoveryPage: React.FC = () => {
   const messagesText = USER_MESSAGES[selectedLanguage];
   const [inputText, setInputText] = useState('');
   const [isLoadingAI, setIsLoadingAI] = useState(false);
+  
+  // 🔑 Generate a unique ID so the bot remembers THIS user
+  const userId = useRef(uuidv4());
 
   // Initial Welcome
   useEffect(() => {
     if (messages.length === 0) {
       addMessage({
         type: 'ai',
-        text: `👋 **Namaste!**\n\nI am connected to the Scholarship Database.\nTry asking:\n\n✨ *"I need a laptop scheme"* \n✨ *"Scholarships for BTech"*`
+        text: `👋 **Namaste!**\n\nI am your Personal Scholarship Counselor.\n\nTell me about yourself:\n*"I am an SC student doing BTech with 1 Lakh income."*`
       });
     }
   }, []);
@@ -32,21 +36,29 @@ export const ScholarshipDiscoveryPage: React.FC = () => {
     setIsLoadingAI(true);
 
     try {
-      // 📡 TALK TO RENDER BACKEND
+      console.log("📡 Connecting to Brain:", BACKEND_URL);
+
+      // 🛑 OLD WAY (Local Filter) - DELETED
+      // const results = await scholarshipService.searchScholarships(userQuery);
+
+      // ✅ NEW WAY (Smart AI Backend)
       const response = await fetch(`${BACKEND_URL}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userQuery })
+        body: JSON.stringify({ 
+          message: userQuery,
+          userId: userId.current // Send ID for memory
+        })
       });
 
-      if (!response.ok) throw new Error("Server Error");
+      if (!response.ok) throw new Error(`Server Error: ${response.status}`);
 
       const data = await response.json();
       addMessage({ type: 'ai', text: data.reply });
 
     } catch (error) {
-      console.error("Error:", error);
-      addMessage({ type: 'ai', text: "⚠️ Server is waking up. Please try again in 30 seconds!" });
+      console.error("Connection Error:", error);
+      addMessage({ type: 'ai', text: "⚠️ Server is waking up (Cold Start). Please try again in 30s!" });
     } finally {
       setIsLoadingAI(false);
     }
@@ -76,19 +88,19 @@ export const ScholarshipDiscoveryPage: React.FC = () => {
     <div className="container mx-auto px-4 py-6 h-[calc(100vh-80px)] flex flex-col max-w-5xl">
       
       {/* 🌟 GLASSMORPHISM CONTAINER */}
-      <div className="flex-grow overflow-hidden flex flex-col bg-gray-900/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-700/50 relative">
+      <div className="flex-grow overflow-hidden flex flex-col bg-gray-900/60 backdrop-blur-xl rounded-3xl shadow-[0_0_40px_rgba(79,70,229,0.15)] border border-white/10 relative">
         
         {/* Neon Glow Line */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[2px] bg-gradient-to-r from-transparent via-teal-400 to-transparent shadow-[0_0_10px_rgba(45,212,191,0.5)]"></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-teal-400 to-transparent shadow-[0_0_15px_#2dd4bf]"></div>
 
         {/* Chat Area */}
-        <div className="flex-grow overflow-y-auto p-6 custom-scrollbar">
+        <div className="flex-grow overflow-y-auto p-6 custom-scrollbar space-y-4">
           <ChatWindow messages={messages} isLoadingAIResponse={isLoadingAI} />
         </div>
 
-        {/* 🚀 FUTURISTIC INPUT BAR */}
-        <div className="p-4 bg-gray-800/40 border-t border-gray-700/30 backdrop-blur-md">
-          <div className="flex items-center gap-3 bg-gray-900/60 rounded-2xl p-2 border border-gray-600/50 shadow-inner">
+        {/* Input Bar */}
+        <div className="p-4 bg-gray-900/40 border-t border-white/5 backdrop-blur-md">
+          <div className="flex items-center gap-3 bg-black/40 rounded-full p-2 border border-white/10 shadow-inner">
             
             <MicrophoneButton onToggleRecording={toggleRecording} isLoading={false} />
             
@@ -105,34 +117,21 @@ export const ScholarshipDiscoveryPage: React.FC = () => {
               onClick={handleSendMessage}
               disabled={!inputText.trim() || isLoadingAI}
               className={`
-                p-3 rounded-xl transition-all duration-300 shadow-lg
+                w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300
                 ${(!inputText.trim() && !isLoadingAI) 
-                  ? 'bg-gray-800 text-gray-600 cursor-not-allowed' 
-                  : 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white hover:scale-105 hover:shadow-indigo-500/40'
+                  ? 'bg-gray-800 text-gray-600' 
+                  : 'bg-gradient-to-tr from-indigo-500 to-purple-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.5)] hover:scale-110'
                 }
               `}
             >
               {isLoadingAI ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
               ) : (
-                <svg className="w-6 h-6 transform rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                 </svg>
               )}
             </button>
-          </div>
-          
-          {/* Quick Chips */}
-          <div className="flex gap-2 mt-3 overflow-x-auto no-scrollbar justify-center">
-            {["💻 Free Laptop", "💰 BTech Fees", "🌍 Study Abroad", "📜 Caste Cert"].map((chip, idx) => (
-              <button 
-                key={idx}
-                onClick={() => { setInputText(chip); handleSendMessage(); }} 
-                className="whitespace-nowrap px-4 py-1.5 bg-gray-800/80 hover:bg-gray-700 border border-gray-700 rounded-full text-xs text-teal-400 transition-all hover:scale-105"
-              >
-                {chip}
-              </button>
-            ))}
           </div>
         </div>
       </div>
