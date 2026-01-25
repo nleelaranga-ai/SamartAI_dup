@@ -15,7 +15,8 @@ const PORT = process.env.PORT || 3000;
 // 2. AI CONFIGURATION
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 // Using gemini-1.5-flash-001 for faster response times and stability
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-001" });
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
 
 // 3. MEMORY STORAGE (Simple in-memory session tracking)
 const chatSessions = {}; 
