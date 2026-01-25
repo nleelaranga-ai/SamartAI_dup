@@ -33,9 +33,10 @@ def search_scholarships(query):
     return results
 
 model = genai.GenerativeModel(
-    model_name="gemini-pro",
+    model_name='gemini-2.5-flash-lite',
     tools=[search_scholarships]
 )
+
 
 CHAT_SESSIONS = {}
 
