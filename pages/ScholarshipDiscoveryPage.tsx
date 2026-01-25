@@ -66,19 +66,18 @@ export const ScholarshipDiscoveryPage: React.FC = () => {
         USER MESSAGE: "${userQuery}"
       `;
 
-const reply = await sendMessageToAI(inputText);
-
-addMessage({
-  type: "ai",
-  text: reply
-});
+         const reply = await sendMessageToAI(userQuery);
+          addMessage({
+          type: "ai",
+          text: reply
+           });
 
 
       // Speak (Text-to-Speech)
       if (reply.length < 200) {
-        const utterance = new SpeechSynthesisUtterance(reply.replace(/[*#]/g, ''));
-        window.speechSynthesis.speak(utterance);
-      }
+  const utterance = new SpeechSynthesisUtterance(reply.replace(/[*#]/g, ''));
+  window.speechSynthesis.speak(utterance);
+}
 
     } catch (error: any) {
       console.error("AI Error:", error);
