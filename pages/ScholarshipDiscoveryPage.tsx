@@ -75,8 +75,8 @@ addMessage({
 
 
       // Speak (Text-to-Speech)
-      if (text.length < 200) {
-        const utterance = new SpeechSynthesisUtterance(text.replace(/[*#]/g, ''));
+      if (reply.length < 200) {
+        const utterance = new SpeechSynthesisUtterance(reply.replace(/[*#]/g, ''));
         window.speechSynthesis.speak(utterance);
       }
 
