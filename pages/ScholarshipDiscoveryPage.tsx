@@ -1,42 +1,35 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import React, { useState, useEffect, useRef } from 'react';
 import { MicrophoneButton } from '../components/MicrophoneButton';
 import { ChatWindow } from '../components/ChatWindow';
 import { useAppContext } from '../context/AppContext';
-import { scholarshipService } from '../services/scholarshipService'; // Import your local DB service
-import { USER_MESSAGES } from '../constants';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+// --- 1. CONFIGURATION ---
+// ⚠️ IMPORTANT: Ensure your VITE_GEMINI_API_KEY is set in .env.local
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
+// --- 2. MASTER DATABASE (Inlined for reliability) ---
+const SCHOLARSHIP_DB = [
+  { name: "Jagananna Vidya Deevena", category: "All", details: "Full fee reimbursement for ITI, B.Tech, MBA. Income < 2.5L.", link: "https://jnanabhumi.ap.gov.in/" },
+  { name: "Jagananna Vasathi Deevena", category: "All", details: "₹20,000/year for hostel & food. Income < 2.5L.", link: "https://jnanabhumi.ap.gov.in/" },
+  { name: "Ambedkar Overseas Vidya Nidhi", category: "SC/ST", details: "₹15 Lakhs for SC/ST students studying abroad (Masters/PhD). Income < 6L.", link: "https://jnanabhumi.ap.gov.in/" },
+  { name: "Bharati Scheme", category: "Brahmin", details: "₹20,000 for Brahmin students in B.Tech/Degree. Income < 3L.", link: "https://apadapter.ap.gov.in/" },
+  { name: "Veda Vyasa Scheme", category: "Brahmin", details: "₹5,000/year for Vedic students.", link: "https://apadapter.ap.gov.in/" },
+  { name: "Free Laptops Scheme", category: "Disabled", details: "Free laptop for Differently Abled professional students.", link: "https://apte.ap.gov.in/" },
+  { name: "BOC Workers Scholarship", category: "Workers", details: "₹20,000 for children of construction workers.", link: "https://labour.ap.gov.in/" }
+];
 
 export const ScholarshipDiscoveryPage: React.FC = () => {
-  const { messages, addMessage, isRecording, setIsRecording, selectedLanguage } = useAppContext();
-  const messagesText = USER_MESSAGES[selectedLanguage];
+  const { messages, addMessage, isRecording, setIsRecording } = useAppContext();
   const [inputText, setInputText] = useState('');
   const [isLoadingAI, setIsLoadingAI] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  // --- CONFIGURATION ---
-  const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-  
-  // 1. Load your local scholarship data
-  const [dbContext, setDbContext] = useState("");
-
-  useEffect(() => {
-    const loadData = async () => {
-      const allSchemes = await scholarshipService.getAllScholarships();
-      // Convert the DB object to a readable string for the AI
-      const contextString = allSchemes.map(s => 
-        `- Scheme Name: "${s.name}"\n  Category: ${s.category}\n  Income Limit: ${s.amount}\n  Description: ${s.description}\n  Link: ${s.applicationLink}`
-      ).join('\n\n');
-      setDbContext(contextString);
-    };
-    loadData();
-  }, []);
 
   // Initial Welcome
   useEffect(() => {
     if (messages.length === 0) {
       addMessage({
         type: 'ai',
-        text: `👋 **Namaste! I am SamartAI.**\n\nI am connected to the government database. Ask me anything like:\n\n✨ *"I need a laptop scheme"* \n✨ *"Scholarships for BTech students"*`
+        text: `👋 **Namaste! I am SamartAI.**\n\nI can help you find scholarships.\n\nTry asking:\n✨ *"I am a Brahmin student"* \n✨ *"Scholarships for SC BTech"* \n✨ *"Free laptop scheme"*`
       });
     }
   }, []);
@@ -44,76 +37,73 @@ export const ScholarshipDiscoveryPage: React.FC = () => {
   const handleSendMessage = async () => {
     if (!inputText.trim()) return;
     const userQuery = inputText;
+    
     setInputText('');
     addMessage({ type: 'user', text: userQuery });
     setIsLoadingAI(true);
 
     try {
-      if (!API_KEY) throw new Error("API Key missing");
+      if (!API_KEY) throw new Error("API Key missing. Check .env.local");
 
-      // 2. Initialize Gemini
+      // --- 3. THE BRAIN LOGIC ---
       const genAI = new GoogleGenerativeAI(API_KEY);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-      // 3. Construct the "Super Prompt"
       const prompt = `
-        SYSTEM ROLE: You are SamartAI, a futuristic and helpful scholarship assistant for students in India.
+        SYSTEM: You are SamartAI, a helpful scholarship counselor.
         
-        YOUR KNOWLEDGE BASE (Use ONLY this data to recommend schemes):
-        ${dbContext}
+        KNOWLEDGE BASE:
+        ${JSON.stringify(SCHOLARSHIP_DB)}
 
         INSTRUCTIONS:
-        1. If the user greets you (hi, hello), reply warmly and ask how you can help.
-        2. If the user asks for a scholarship, search YOUR KNOWLEDGE BASE above.
-        3. If you find matches, list them with emojis (🎓, 💰, 🔗).
-        4. If the user input is gibberish or unclear, politely ask them to clarify.
-        5. Keep responses concise and friendly.
+        1. Answer the user's question using ONLY the Knowledge Base above.
+        2. If the user greets you, reply warmly.
+        3. If you find a match, show the Name, Details, and Link.
+        4. Use emojis (🎓, 💰, 🔗).
+        5. Keep answers short (max 3 sentences).
         
-        USER QUERY: "${userQuery}"
+        USER MESSAGE: "${userQuery}"
       `;
 
       const result = await model.generateContent(prompt);
       const response = await result.response;
-      const replyText = response.text();
+      const text = response.text();
 
-      addMessage({ type: 'ai', text: replyText });
+      addMessage({ type: 'ai', text: text });
 
-    } catch (error) {
-      console.error("AI Error:", error);
-      // Fallback to local search if AI fails
-      try {
-        const localResults = await scholarshipService.searchScholarships(userQuery);
-        if (localResults.length > 0) {
-           const resultText = localResults.map(s => `🎓 **${s.name}**\n🔗 [Apply](${s.applicationLink})`).join('\n\n');
-           addMessage({ type: 'ai', text: `(Offline Mode) Found these:\n\n${resultText}` });
-        } else {
-           addMessage({ type: 'ai', text: "I'm having trouble connecting to the cloud, and I couldn't find local matches." });
-        }
-      } catch (e) {
-        addMessage({ type: 'ai', text: messagesText.errorOccurred });
+      // Speak (Text-to-Speech)
+      if (text.length < 200) {
+        const utterance = new SpeechSynthesisUtterance(text.replace(/[*#]/g, ''));
+        window.speechSynthesis.speak(utterance);
       }
+
+    } catch (error: any) {
+      console.error("AI Error:", error);
+      let msg = "⚠️ Connection Error.";
+      if (error.message.includes("404")) msg = "⚠️ Model Error. Please restart.";
+      if (error.message.includes("429")) msg = "⚠️ Too many requests. Please wait.";
+      addMessage({ type: 'ai', text: msg });
     } finally {
       setIsLoadingAI(false);
     }
   };
 
-  // Voice Logic
+  // --- 4. VOICE LOGIC ---
   const toggleRecording = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) { alert("Use Chrome for Voice."); return; }
+    if (!SpeechRecognition) return alert("Use Chrome for Voice.");
 
     if (isRecording) {
       setIsRecording(false);
     } else {
       setIsRecording(true);
       const recognition = new SpeechRecognition();
-      recognition.lang = selectedLanguage === 'en' ? 'en-US' : (selectedLanguage === 'te' ? 'te-IN' : 'hi-IN');
+      recognition.lang = 'en-IN';
       recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
         setInputText(transcript);
         setIsRecording(false);
-        // Optional: auto-send
-        // handleSendMessage(); 
+        // handleSendMessage(); // Uncomment to auto-send
       };
       recognition.start();
     }
@@ -121,23 +111,17 @@ export const ScholarshipDiscoveryPage: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 h-[calc(100vh-80px)] flex flex-col max-w-5xl">
-      
-      {/* 🌟 GLASSMORPHISM CONTAINER */}
       <div className="flex-grow overflow-hidden flex flex-col bg-gray-900/60 backdrop-blur-xl rounded-3xl shadow-[0_0_40px_rgba(79,70,229,0.15)] border border-white/10 relative">
-        
-        {/* Neon Glow Line */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-teal-400 to-transparent shadow-[0_0_15px_#2dd4bf]"></div>
-
+        
         {/* Chat Area */}
-        <div className="flex-grow overflow-y-auto p-6 custom-scrollbar space-y-4">
+        <div className="flex-grow overflow-y-auto p-6 custom-scrollbar">
           <ChatWindow messages={messages} isLoadingAIResponse={isLoadingAI} />
         </div>
 
-        {/* 🚀 FUTURISTIC INPUT BAR */}
+        {/* Input Bar */}
         <div className="p-4 bg-gray-900/40 border-t border-white/5 backdrop-blur-md">
           <div className="flex items-center gap-3 bg-black/40 rounded-full p-2 border border-white/10 shadow-inner">
-            
-            {/* The New Small Mic */}
             <MicrophoneButton onToggleRecording={toggleRecording} isLoading={false} />
             
             <input
@@ -145,7 +129,7 @@ export const ScholarshipDiscoveryPage: React.FC = () => {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              placeholder={messagesText.chatPlaceholder}
+              placeholder="Type your message..."
               className="flex-grow bg-transparent text-white px-3 py-2 focus:outline-none placeholder-gray-500 text-lg font-light tracking-wide"
             />
             
@@ -155,27 +139,21 @@ export const ScholarshipDiscoveryPage: React.FC = () => {
               className={`
                 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300
                 ${(!inputText.trim() && !isLoadingAI) 
-                  ? 'bg-gray-800 text-gray-600' 
+                  ? 'bg-gray-800 text-gray-600 cursor-not-allowed' 
                   : 'bg-gradient-to-tr from-indigo-500 to-purple-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.5)] hover:scale-110'
                 }
               `}
             >
-              {isLoadingAI ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              ) : (
-                <svg className="w-5 h-5 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
-              )}
+              {isLoadingAI ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <span className="text-xl">➤</span>}
             </button>
           </div>
           
-          {/* Quick Chips */}
-          <div className="flex gap-2 mt-3 overflow-x-auto no-scrollbar justify-center">
-            {["💻 Free Laptop", "💰 BTech Fees", "🌍 Study Abroad"].map((chip, idx) => (
+           {/* Quick Chips */}
+           <div className="flex gap-2 mt-3 overflow-x-auto no-scrollbar justify-center">
+            {["💻 Free Laptop", "💰 BTech Fees", "🌍 Study Abroad", "📜 Caste Cert"].map((chip, idx) => (
               <button 
                 key={idx}
-                onClick={() => { setInputText(chip); handleSendMessage(); }} 
+                onClick={() => { setInputText(chip); }} 
                 className="whitespace-nowrap px-4 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-xs text-teal-300 transition-all hover:scale-105 backdrop-blur-sm"
               >
                 {chip}
