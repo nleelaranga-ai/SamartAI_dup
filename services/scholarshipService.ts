@@ -1,8 +1,9 @@
 import { Scholarship } from '../types';
 
-// --- 1. THE DATABASE (Converted from your Python file) ---
+// --- THE MASTER DATABASE (17 Schemes) ---
+// This is your "Local Database"
 const SCHOLARSHIPS_DB: Scholarship[] = [
-  // 1. GENERAL (SC/ST/BC/Minority/Kapu)
+  // 1. GENERAL & JAGANANNA
   {
     id: '1',
     name: "Jagananna Vidya Deevena (RTF)",
@@ -10,22 +11,22 @@ const SCHOLARSHIPS_DB: Scholarship[] = [
     category: "All (SC/ST/BC/Kapu/Minority)",
     amount: "Full Fee Reimbursement",
     deadline: "Open",
-    description: "Full fee reimbursement for ITI, Polytechnic, Degree, B.Tech, MBA, MCA. Credited directly to mother's account.",
-    eligibility: ["Income < ₹2.5L", "75% Attendance"],
+    description: "Full tuition fee reimbursement for ITI, Polytechnic, Degree, B.Tech, MBA, MCA. Money credited to mother's account.",
+    eligibility: ["Income < ₹2.5L", "75% Attendance", "AP Resident"],
     applicationLink: "https://jnanabhumi.ap.gov.in/",
-    tags: ["fee", "reimbursement", "btech", "degree", "engineering", "mba", "mca", "polytechnic", "general", "all"]
+    tags: ["fee", "reimbursement", "btech", "degree", "engineering", "mba", "mca", "polytechnic", "rtf", "tuition", "general"]
   },
   {
     id: '2',
     name: "Jagananna Vasathi Deevena (MTF)",
     provider: "Andhra Pradesh Govt",
     category: "All (SC/ST/BC/Kapu/Minority)",
-    amount: "₹10,000 - ₹20,000 / year",
+    amount: "₹10,000 - ₹20,000 per year",
     deadline: "Open",
-    description: "Financial aid for food & hostel expenses. ITI: ₹10K, Polytechnic: ₹15K, Degree/Engg: ₹20K.",
-    eligibility: ["Income < ₹2.5L"],
+    description: "Financial aid for hostel and food expenses. ITI: ₹10K, Polytechnic: ₹15K, Degree/Engg: ₹20K.",
+    eligibility: ["Income < ₹2.5L", "Hostel Student"],
     applicationLink: "https://jnanabhumi.ap.gov.in/",
-    tags: ["hostel", "food", "mess", "boarding", "lodging", "stay", "general", "all"]
+    tags: ["hostel", "food", "mess", "boarding", "lodging", "mtf", "stay", "accommodation"]
   },
   {
     id: '3',
@@ -34,10 +35,10 @@ const SCHOLARSHIPS_DB: Scholarship[] = [
     category: "SC/ST",
     amount: "Up to ₹15 Lakhs",
     deadline: "September / February",
-    description: "Financial assistance for SC/ST students pursuing higher studies (Masters/PhD) abroad.",
-    eligibility: ["Income < ₹6L", "Valid Passport"],
+    description: "Financial assistance for SC/ST students pursuing Masters or PhD abroad (USA, UK, Australia, etc.).",
+    eligibility: ["Income < ₹6L", "Valid Passport/Visa", "60% in Degree"],
     applicationLink: "https://jnanabhumi.ap.gov.in/",
-    tags: ["abroad", "foreign", "masters", "phd", "ms", "overseas", "sc", "st"]
+    tags: ["abroad", "foreign", "masters", "phd", "ms", "overseas", "usa", "uk", "sc", "st"]
   },
   {
     id: '4',
@@ -46,158 +47,96 @@ const SCHOLARSHIPS_DB: Scholarship[] = [
     category: "Minority",
     amount: "Variable",
     deadline: "October",
-    description: "Central scholarship for Minority community students from Class 11 to Ph.D.",
+    description: "Central scholarship for Minority community students (Muslim, Christian, Sikh, etc.) from Class 11 to Ph.D.",
     eligibility: ["Income < ₹2L", "50% Marks"],
     applicationLink: "https://scholarships.gov.in/",
-    tags: ["muslim", "christian", "sikh", "minority", "jain", "central"]
+    tags: ["muslim", "christian", "sikh", "minority", "central", "national", "jain", "parsi"]
   },
-
   // 2. BRAHMIN WELFARE
   {
     id: '101',
     name: "Bharati Scheme - Graduation",
     provider: "AP Brahmin Corp",
     category: "Brahmin",
-    amount: "Financial Aid",
+    amount: "₹15,000 one-time",
     deadline: "Open",
-    description: "Financial assistance for Brahmin students pursuing any regular 3-year graduation course (BA, BCom, BSc).",
-    eligibility: ["Income < ₹3L", "EWS"],
+    description: "Financial support for poor Brahmin students pursuing regular 3-year degree courses (BA, BSc, BCom).",
+    eligibility: ["Income < ₹3L", "EWS Certificate", "Passed Inter"],
     applicationLink: "https://apadapter.ap.gov.in/",
-    tags: ["degree", "b.a", "b.com", "b.sc", "brahmin", "upper caste"]
-  },
-  {
-    id: '102',
-    name: "Bharati Scheme - Post-Graduation",
-    provider: "AP Brahmin Corp",
-    category: "Brahmin",
-    amount: "Financial Aid",
-    deadline: "Open",
-    description: "Support for Brahmin students pursuing 2-year+ PG courses like M.Sc, M.Com, M.Tech, MBA.",
-    eligibility: ["Income < ₹3L"],
-    applicationLink: "https://apadapter.ap.gov.in/",
-    tags: ["pg", "masters", "mba", "mca", "mtech", "brahmin"]
+    tags: ["degree", "b.a", "b.com", "b.sc", "graduation", "brahmin", "oc"]
   },
   {
     id: '103',
     name: "Bharati Scheme - Professional",
     provider: "AP Brahmin Corp",
     category: "Brahmin",
-    amount: "Financial Aid",
+    amount: "₹20,000 one-time",
     deadline: "Open",
-    description: "Financial assistance for Brahmin students pursuing professional courses like B.Tech, Medicine, Pharmacy.",
-    eligibility: ["Income < ₹3L"],
+    description: "Financial aid for Brahmin students in professional courses like B.Tech, Medicine, Pharmacy, Law.",
+    eligibility: ["Income < ₹3L", "Professional Course"],
     applicationLink: "https://apadapter.ap.gov.in/",
-    tags: ["professional", "medicine", "engineering", "btech", "pharmacy", "brahmin"]
-  },
-  {
-    id: '104',
-    name: "Bharati Scheme - Intermediate/ITI",
-    provider: "AP Brahmin Corp",
-    category: "Brahmin",
-    amount: "Financial Aid",
-    deadline: "Open",
-    description: "Financial assistance for eligible poor Brahmin students pursuing Intermediate, ITI, or Polytechnic.",
-    eligibility: ["Income < ₹3L"],
-    applicationLink: "https://apadapter.ap.gov.in/",
-    tags: ["inter", "intermediate", "diploma", "iti", "polytechnic", "brahmin"]
-  },
-  {
-    id: '105',
-    name: "Bharati Overseas Scheme",
-    provider: "AP Brahmin Corp",
-    category: "Brahmin",
-    amount: "Up to ₹20 Lakhs",
-    deadline: "Variable",
-    description: "Financial aid for Brahmin students who secured admission for a Master's degree abroad.",
-    eligibility: ["Income < ₹6L"],
-    applicationLink: "https://apadapter.ap.gov.in/",
-    tags: ["abroad", "foreign", "masters", "ms", "brahmin"]
+    tags: ["professional", "medicine", "engineering", "btech", "pharmacy", "law", "brahmin"]
   },
   {
     id: '106',
     name: "Veda Vyasa Scheme",
     provider: "AP Brahmin Corp",
     category: "Brahmin",
-    amount: "Annual Assistance",
+    amount: "₹5,000 - ₹10,000 per year",
     deadline: "Open",
-    description: "Annual financial assistance to encourage Vedic Education.",
+    description: "Encouragement for students pursuing full-time Vedic Education.",
     eligibility: ["Vedic Student", "Income < ₹3L"],
     applicationLink: "https://apadapter.ap.gov.in/",
-    tags: ["veda", "vedic", "archaka", "purohit", "brahmin", "priest"]
-  },
-  {
-    id: '107',
-    name: "Gayathri Awards",
-    provider: "AP Brahmin Corp",
-    category: "Brahmin",
-    amount: "Merit Award",
-    deadline: "After Results",
-    description: "Awards for toppers in SSC, Intermediate, Graduation, or Professional courses.",
-    eligibility: ["Merit Rank", "Income < ₹3L"],
-    applicationLink: "https://apadapter.ap.gov.in/",
-    tags: ["topper", "merit", "rank", "award", "brahmin"]
+    tags: ["veda", "vedic", "archaka", "purohit", "priest", "brahmin"]
   },
   {
     id: '108',
-    name: "Bharati Scheme (CA)",
+    name: "Bharati Scheme (CA/ICWA)",
     provider: "AP Brahmin Corp",
     category: "Brahmin",
-    amount: "Financial Aid",
+    amount: "₹15,000 (Inter) / ₹30,000 (Final)",
     deadline: "Open",
-    description: "Financial assistance for Brahmin students pursuing CA Intern and Final.",
-    eligibility: ["Income < ₹3L"],
+    description: "Financial assistance for Brahmin students pursuing CA (Chartered Accountancy) or ICWA.",
+    eligibility: ["Income < ₹3L", "Cleared CPT"],
     applicationLink: "https://apadapter.ap.gov.in/",
-    tags: ["ca", "chartered accountant", "ipcc", "brahmin"]
+    tags: ["ca", "chartered accountant", "ipcc", "cma", "brahmin", "commerce"]
   },
-  {
-    id: '109',
-    name: "Bharati School Education",
-    provider: "AP Brahmin Corp",
-    category: "Brahmin",
-    amount: "Financial Aid",
-    deadline: "June/July",
-    description: "Financial assistance for Brahmin students in Class 1 to Class 10.",
-    eligibility: ["Income < ₹3L"],
-    applicationLink: "https://apadapter.ap.gov.in/",
-    tags: ["school", "class 1", "class 10", "child", "brahmin"]
-  },
-
   // 3. WORKERS & DISABLED
   {
     id: '201',
     name: "BOC Workers Children Scholarship",
     provider: "Labour Dept",
     category: "Construction Workers",
-    amount: "Variable",
+    amount: "₹2,000 - ₹20,000",
     deadline: "Open",
-    description: "Scholarships for children of registered Building & Other Construction workers.",
-    eligibility: ["Parent Registered with BOC", "Income < ₹3L"],
+    description: "Scholarship for children of registered Building & Other Construction (BOC) workers.",
+    eligibility: ["Parent Registered with BOC Board", "Valid Labour Card"],
     applicationLink: "https://labour.ap.gov.in/",
-    tags: ["labour", "worker", "construction", "mason", "daily wage"]
+    tags: ["labour", "worker", "construction", "mason", "daily wage", "coolie", "boc"]
   },
   {
     id: '301',
     name: "Sanction of Laptops",
     provider: "Dept for Differently Abled",
     category: "Differently Abled",
-    amount: "Free Laptop",
+    amount: "Free Laptop (Worth ₹35,000)",
     deadline: "Open",
-    description: "Distribution of laptops to visually, hearing, speech, and orthopedically challenged students in professional courses.",
-    eligibility: ["Professional Course", "Income < ₹3L"],
+    description: "Free laptops for visually, hearing, or orthopedically challenged students in professional courses.",
+    eligibility: ["Professional Course Student", "SADAREM Certificate"],
     applicationLink: "https://apte.ap.gov.in/",
-    tags: ["laptop", "computer", "disabled", "handicapped", "blind", "deaf"]
+    tags: ["laptop", "computer", "visually", "hearing", "disabled", "handicapped", "device", "blind", "deaf"]
   },
   {
     id: '302',
     name: "Motorized Three Wheelers",
     provider: "Dept for Differently Abled",
     category: "Differently Abled",
-    amount: "Free Vehicle",
+    amount: "Free Motorized Vehicle",
     deadline: "Open",
-    description: "Provision of motorized three-wheelers to eligible orthopedically challenged persons for mobility.",
-    eligibility: ["Orthopedic Disability", "Income < ₹3L"],
+    description: "Provision of motorized three-wheelers (scooters) to eligible orthopedically challenged persons for mobility.",
+    eligibility: ["Orthopedic Disability > 40%", "Age 18-45", "Income < ₹3L"],
     applicationLink: "https://apte.ap.gov.in/",
-    tags: ["vehicle", "scooter", "bike", "disabled", "handicapped", "mobility"]
+    tags: ["vehicle", "bike", "scooter", "mobility", "orthopedic", "disabled", "handicapped"]
   },
   {
     id: '303',
@@ -206,44 +145,54 @@ const SCHOLARSHIPS_DB: Scholarship[] = [
     category: "Differently Abled",
     amount: "Free Audio Player",
     deadline: "Open",
-    description: "Distribution of Daisy Players (Audio Books) to visually challenged students from 9th Class to Degree.",
+    description: "Distribution of Daisy Players (Audio Books) to visually challenged students.",
     eligibility: ["Visually Challenged", "Income < ₹3L"],
     applicationLink: "https://apte.ap.gov.in/",
     tags: ["blind", "audio", "player", "daisy", "disabled", "visually challenged"]
   }
 ];
 
-// --- 2. THE LOCAL BRAIN (Search Logic) ---
+// --- SEARCH ENGINE LOGIC ---
+const STOP_WORDS = new Set([
+  'i', 'am', 'a', 'an', 'the', 'want', 'need', 'search', 'find', 'me', 'for', 
+  'scholarship', 'scholarships', 'scheme', 'schemes', 'program', 'government', 
+  'govt', 'please', 'help', 'apply', 'application', 'status', 'is', 'are'
+]);
+
 export const scholarshipService = {
-  
-  // This function replaces Google AI. It runs instantly on the user's laptop.
   searchScholarships: async (query: string): Promise<Scholarship[]> => {
-    // 1. Simulate "Thinking" time (0.8 seconds) to feel like AI
-    await new Promise(resolve => setTimeout(resolve, 800));
+    // 1. Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
 
+    // 2. Pre-processing
     const lowerQuery = query.toLowerCase();
-    
-    // 2. Filter Logic
-    return SCHOLARSHIPS_DB.filter(scholarship => {
-      // A. Direct Category Match (e.g., user types "SC")
-      if (scholarship.category.toLowerCase().includes(lowerQuery)) return true;
-      
-      // B. Name Match (e.g., user types "Jagananna")
-      if (scholarship.name.toLowerCase().includes(lowerQuery)) return true;
-      
-      // C. Tag Match (e.g., user types "BTech" -> matches "engineering" tag)
-      if (scholarship.tags && scholarship.tags.some(tag => lowerQuery.includes(tag))) return true;
-      
-      // D. "General" Logic: If user asks for general schemes, give them the "All" category
-      if (lowerQuery.includes('general') || lowerQuery.includes('all')) {
-        if (scholarship.category.includes('All')) return true;
-      }
+    const words = lowerQuery.split(/[\s,?.!]+/).filter(w => w.length > 2 && !STOP_WORDS.has(w));
 
-      return false;
+    if (words.length === 0) return []; // Too vague
+
+    // 3. Scoring System
+    const scoredResults = SCHOLARSHIPS_DB.map(scholarship => {
+      let score = 0;
+      
+      // Exact Category Match (High Value)
+      if (words.some(w => scholarship.category.toLowerCase().includes(w))) score += 50;
+      
+      // Name Match (Medium Value)
+      if (words.some(w => scholarship.name.toLowerCase().includes(w))) score += 30;
+      
+      // Tag Match (Good Value)
+      const matchedTags = scholarship.tags.filter(tag => words.some(w => tag.includes(w)));
+      score += matchedTags.length * 15;
+
+      return { scholarship, score };
     });
+
+    // 4. Threshold & Sort
+    return scoredResults
+      .filter(item => item.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map(item => item.scholarship);
   },
 
-  getAllScholarships: async (): Promise<Scholarship[]> => {
-    return SCHOLARSHIPS_DB;
-  }
+  getAllScholarships: async () => SCHOLARSHIPS_DB
 };
