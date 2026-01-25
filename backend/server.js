@@ -4,20 +4,23 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
 
 const app = express();
+
+// 1. GLOBAL MIDDLEWARE
+// Allow all origins for the hackathon deployment
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
-// Memory Storage
-const chatSessions = {}; 
-
+// 2. AI CONFIGURATION
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-// 🛠️ FIX: Changed model name to the specific stable version
-// 'gemini-1.5-flash-001' is more reliable than 'gemini-1.5-flash'
+// Using gemini-1.5-flash-001 for faster response times and stability
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-001" });
 
+// 3. MEMORY STORAGE (Simple in-memory session tracking)
+const chatSessions = {}; 
+
+// 4. KNOWLEDGE BASE
 const SCHOLARSHIP_DB = [
   { 
     name: "Jagananna Vidya Deevena (RTF)", 
@@ -71,33 +74,46 @@ const SCHOLARSHIP_DB = [
   }
 ];
 
-app.get('/', (req, res) => res.send('🧠 SamartAI Brain Online'));
+// 5. ROUTES
+app.get('/', (req, res) => res.send('🧠 SamartAI Brain Online - Connected to Gemini 1.5 Flash'));
 
 app.post('/chat', async (req, res) => {
   try {
     const { message, userId = 'default' } = req.body;
-    console.log(`📩 [${userId}] User:`, message);
 
+    if (!message) {
+      return res.status(400).json({ reply: "Please provide a message." });
+    }
+
+    // Initialize session if new
     if (!chatSessions[userId]) chatSessions[userId] = [];
+    
+    // Maintain a rolling history of 8 messages to prevent context overflow
     chatSessions[userId].push({ role: "user", content: message });
     if (chatSessions[userId].length > 8) chatSessions[userId].shift();
 
-    const historyText = chatSessions[userId].map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n');
+    const historyText = chatSessions[userId]
+      .map(m => `${m.role.toUpperCase()}: ${m.content}`)
+      .join('\n');
 
+    // Structured Prompt for the AI
     const prompt = `
-      SYSTEM: You are SamartAI, a scholarship counselor.
+      SYSTEM: You are SamartAI, a specialized scholarship counselor for the AI for Bharat initiative.
       
-      DATA:
+      MISSION: Provide clear, accessible information about government schemes to students.
+      
+      KNOWLEDGE BASE:
       ${JSON.stringify(SCHOLARSHIP_DB)}
 
       CHAT HISTORY:
       ${historyText}
 
-      INSTRUCTIONS:
-      1. Use HISTORY to remember user context (Caste, Income).
-      2. Match user needs to the DATA.
-      3. Be short, helpful, and use emojis.
-
+      STRICT INSTRUCTIONS:
+      1. Use HISTORY to track user caste/income if mentioned previously.
+      2. If a query matches a scheme in the KNOWLEDGE BASE, provide the Name and specific Details.
+      3. If no scheme matches, politely inform them and suggest general government resources.
+      4. Use encouraging emojis and keep responses concise (max 4 sentences).
+      
       USER: "${message}"
     `;
 
@@ -105,16 +121,22 @@ app.post('/chat', async (req, res) => {
     const response = await result.response;
     const replyText = response.text();
 
+    // Store AI response in history
     chatSessions[userId].push({ role: "ai", content: replyText });
     
     res.json({ reply: replyText });
 
   } catch (error) {
-    console.error("❌ Brain Error:", error);
-    // If Flash fails again, we will fall back to 'gemini-pro' in the next step
-    res.status(500).json({ reply: "⚠️ My brain is updating. Please try again in 10 seconds." });
+    console.error("❌ Backend AI Error:", error);
+    res.status(500).json({ 
+      reply: "⚠️ I'm processing heavy traffic. Please try again in a few seconds.",
+      error: error.message 
+    });
   }
 });
 
-// Ensure the server listens on 0.0.0.0 for Render compatibility
-app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server running on port ${PORT}`));
+// 6. SERVER START
+// Port binding 0.0.0.0 is mandatory for Render/Cloud deployments
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 SamartAI Backend running on port ${PORT}`);
+});
