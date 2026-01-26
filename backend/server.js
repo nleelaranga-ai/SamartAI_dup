@@ -15,7 +15,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 // ---------- INIT GEMINI ----------
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash"
+  model: "gemini-pro"
 });
 
 // ---------- VERIFIED SCHOLARSHIP DATA ----------
