@@ -1,5 +1,5 @@
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-
+// services/geminiService.ts
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:10000';
 function getUserId() {
   let uid = localStorage.getItem("samartai_user");
   if (!uid) {
