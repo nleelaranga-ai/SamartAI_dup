@@ -9,28 +9,25 @@ const app = express();
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 
-
 const PORT = process.env.PORT || 10000;
 const HF_API_KEY = process.env.HF_API_KEY;
 
-// ---------------- HEALTH CHECK ----------------
+// ---------------- HEALTH ----------------
 app.get("/", (req, res) => {
   res.send("🧠 SamartAI Backend is Online");
 });
 
-// ---------------- CHAT ENDPOINT ----------------
+// ---------------- CHAT ----------------
 app.post("/chat", async (req, res) => {
   try {
     const { message } = req.body;
 
     if (!message) {
-      return res.json({
-        reply: "⚠️ Please send a message."
-      });
+      return res.json({ reply: "⚠️ Please send a message." });
     }
-    console.log("HF response status:", response.status);
+
     const response = await fetch(
-      "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2",
+      "https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.2",
       {
         method: "POST",
         headers: {
@@ -54,21 +51,18 @@ Assistant:
       }
     );
 
-    // 🛡️ SAFE RESPONSE HANDLING
     const rawText = await response.text();
 
     let data;
     try {
       data = JSON.parse(rawText);
-    } catch (err) {
-      console.error("❌ Non-JSON response from Hugging Face:", rawText);
+    } catch {
       return res.json({
-        reply: "⚠️ AI is temporarily unavailable. Please try again in a moment."
+        reply: "⚠️ AI is warming up. Please try again in a moment."
       });
     }
 
     if (data.error) {
-      console.error("❌ Hugging Face API Error:", data);
       return res.json({
         reply: "⏳ AI is starting up. Please try again in a few seconds."
       });
@@ -89,7 +83,7 @@ Assistant:
   }
 });
 
-// ---------------- START SERVER ----------------
+// ---------------- START ----------------
 app.listen(PORT, () => {
   console.log(`🚀 SamartAI Backend running on port ${PORT}`);
 });
