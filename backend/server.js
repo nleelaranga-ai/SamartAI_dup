@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import fetch from "node-fetch";
 
 dotenv.config();
 
@@ -11,22 +12,28 @@ app.use(express.json());
 const PORT = process.env.PORT || 10000;
 const HF_API_KEY = process.env.HF_API_KEY;
 
-// ---------------- HEALTH ----------------
+// ---------------- HEALTH CHECK ----------------
 app.get("/", (req, res) => {
-  res.send("🧠 SamartAI Brain Online");
+  res.send("🧠 SamartAI Backend is Online");
 });
 
-// ---------------- CHAT ----------------
+// ---------------- CHAT ENDPOINT ----------------
 app.post("/chat", async (req, res) => {
   try {
     const { message } = req.body;
 
+    if (!message) {
+      return res.json({
+        reply: "⚠️ Please send a message."
+      });
+    }
+
     const response = await fetch(
-      "https://router.huggingface.co/hf-inference/models/HuggingFaceH4/zephyr-7b-beta",
+      "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2",
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${HF_API_KEY}`,
+          Authorization: `Bearer ${HF_API_KEY}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -46,10 +53,21 @@ Assistant:
       }
     );
 
-    const data = await response.json();
+    // 🛡️ SAFE RESPONSE HANDLING
+    const rawText = await response.text();
+
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch (err) {
+      console.error("❌ Non-JSON response from Hugging Face:", rawText);
+      return res.json({
+        reply: "⚠️ AI is temporarily unavailable. Please try again in a moment."
+      });
+    }
 
     if (data.error) {
-      console.error("❌ HF Error:", data);
+      console.error("❌ Hugging Face API Error:", data);
       return res.json({
         reply: "⏳ AI is starting up. Please try again in a few seconds."
       });
@@ -58,7 +76,7 @@ Assistant:
     const reply =
       Array.isArray(data) && data[0]?.generated_text
         ? data[0].generated_text.trim()
-        : "⚠️ No response generated.";
+        : "⚠️ I couldn’t generate a response right now.";
 
     res.json({ reply });
 
@@ -70,7 +88,7 @@ Assistant:
   }
 });
 
-// ---------------- START ----------------
+// ---------------- START SERVER ----------------
 app.listen(PORT, () => {
   console.log(`🚀 SamartAI Backend running on port ${PORT}`);
 });
