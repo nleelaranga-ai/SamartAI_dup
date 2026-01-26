@@ -8,7 +8,7 @@ dotenv.config();
 const app = express();
 app.use(cors({ origin: "*" }));
 app.use(express.json());
-console.log("HF response status:", response.status);
+
 
 const PORT = process.env.PORT || 10000;
 const HF_API_KEY = process.env.HF_API_KEY;
@@ -28,7 +28,7 @@ app.post("/chat", async (req, res) => {
         reply: "⚠️ Please send a message."
       });
     }
-
+    console.log("HF response status:", response.status);
     const response = await fetch(
       "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2",
       {
