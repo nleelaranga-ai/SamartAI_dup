@@ -31,41 +31,30 @@ export const ScholarshipDiscoveryPage: React.FC = () => {
   }, []);
 
   const handleSendMessage = async () => {
-    if (!inputText.trim()) return;
-    const userQuery = inputText;
-    
-    setInputText('');
-    addMessage({ type: 'user', text: userQuery });
-    setIsLoadingAI(true);
+  if (!inputText.trim()) return;
+  const userQuery = inputText;
 
-    try {
-      // --- 2. BACKEND COMMUNICATION ---
-      // This calls your Render Backend. Ensure VITE_BACKEND_URL is set in Render.
-      const reply = await sendMessageToAI(userQuery);
+  setInputText('');
+  addMessage({ type: 'user', text: userQuery });
+  setIsLoadingAI(true);
 
-      addMessage({
-        type: "ai",
-        text: reply
-      });
+  try {
+    // ALTERNATIVE: Use local search logic instead of the failing API
+    const results = await scholarshipService.searchScholarships(userQuery);
 
-      // Text-to-Speech (only if reply is short)
-      if (reply.length < 250) {
-        const utterance = new SpeechSynthesisUtterance(reply.replace(/[*#]/g, ''));
-        window.speechSynthesis.speak(utterance);
-      }
-
-    } catch (error: any) {
-      console.error("AI Error:", error);
-      
-      // FALLBACK: If Render backend fails, provide helpful offline info
-      addMessage({ 
-        type: 'ai', 
-        text: "⚠️ (Offline Mode) I'm having trouble reaching my main brain, but I found these for you: \n\n🎓 **Jagananna Deevena** (All) \n🎓 **Ambedkar Overseas** (SC/ST) \n🎓 **Free Laptops** (Disabled)" 
-      });
-    } finally {
-      setIsLoadingAI(false);
+    if (results.length > 0) {
+      const reply = `I found ${results.length} scholarships for you:\n\n` + 
+        results.map(s => `🎓 **${s.name}**\n${s.description}\n[Apply Here](${s.applicationLink})`).join('\n\n');
+      addMessage({ type: 'ai', text: reply });
+    } else {
+      addMessage({ type: 'ai', text: "I couldn't find a specific match. Try asking about 'BTech', 'SC/ST', or 'Laptops'." });
     }
-  };
+  } catch (error) {
+    addMessage({ type: 'ai', text: "Sorry, I encountered an error searching the database." });
+  } finally {
+    setIsLoadingAI(false);
+  }
+};
 
   // --- 3. VOICE LOGIC ---
   const toggleRecording = () => {
