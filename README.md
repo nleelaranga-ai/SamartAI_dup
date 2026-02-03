@@ -17,7 +17,7 @@
 
 ## 🚀 Overview
 
-**SamartAI** is an accessibility-first AI platform that helps students discover government scholarships, understand eligibility, and receive step-by-step guidance—without navigating complex portals.
+**SamartAI** is an accessibility-first AI platform that helps students discover **government scholarships**, understand **eligibility**, and receive **step-by-step guidance**—without navigating complex portals.
 
 Unlike traditional scholarship portals that only list information, SamartAI **acts like a guide**.
 
@@ -44,9 +44,9 @@ Millions of eligible students miss scholarships not due to lack of merit, but be
 
 ## 💡 The Innovation
 
-- Guidance-first AI that understands intent and explains outcomes  
-- Dual-platform design to remove device and bandwidth barriers  
-- A single intelligence layer powering multiple access channels  
+- **Guidance-first AI** that understands intent and explains outcomes  
+- **Dual-platform design** to remove device and bandwidth barriers  
+- **Single intelligence layer** powering multiple access channels  
 
 This ensures **no student is excluded due to technology limitations**.
 
@@ -69,72 +69,37 @@ SamartAI follows a **shared-intelligence, multi-interface architecture**.
 
 > **One AI brain powers multiple access channels.**
 
-```mermaid
-flowchart TB
-    User[User]
+User
+│
+├── 🌐 Web Application (React + TypeScript)
+│
+├── 💬 Telegram Bot (Python Interface)
+│
+└── 🤖 Shared AI Backend (Python + Flask)
+│
+├── Intent Understanding
+├── Eligibility Logic
+├── Guidance Engine
+└── Context Handling
+│
+└── 📚 Scholarship Knowledge Base
+(Verified Government Datasets)
 
-    Web[Web Application - React and TypeScript]
-    Telegram[Telegram Bot - Python Interface]
-
-    Backend[Shared AI Backend - Python and Flask]
-
-    Intent[Intent Understanding]
-    Eligibility[Eligibility Logic]
-    Guidance[Guidance Engine]
-    Context[Context Handling]
-
-    Data[Scholarship Knowledge Base - Verified Datasets]
-
-    User --> Web
-    User --> Telegram
-
-    Web --> Backend
-    Telegram --> Backend
-
-    Backend --> Intent
-    Backend --> Eligibility
-    Backend --> Guidance
-    Backend --> Context
-
-    Backend --> Data
+### Why this works
+- ✅ Renders perfectly on GitHub
+- ✅ Easy to understand in **10 seconds**
+- ✅ Judges immediately get the idea
+- ✅ Still shows innovation clearly
 
 ---
 
-## ⚙️ Technology Stack
+## 🥈 OPTION 2 (ADVANCED): Use an Architecture IMAGE  
+(Do this later if you want extra polish)
 
-- **Web:** React, TypeScript, Tailwind CSS  
-- **Bot:** Python (Telegram Bot API)  
-- **Backend:** Python + Flask  
-- **AI Layer:** Intent understanding & eligibility matching  
-- **Data:** Verified, structured scholarship datasets  
+- Create a diagram in **Draw.io / Figma / PowerPoint**
+- Export as PNG
+- Upload to `assets/architecture.png`
+- Add this line in README:
 
----
-
-## 🌍 Social Impact
-
-SamartAI is built for **real-world impact**:
-- Supports first-generation learners  
-- Reduces scholarship drop-offs  
-- Reaches rural and low-connectivity users  
-- Empowers parents, volunteers, and NGOs  
-- Promotes inclusive access to education  
-
----
-
-## 🔮 Roadmap
-
-- WhatsApp integration  
-- Voice-only interaction mode  
-- OCR-based document understanding  
-- Multilingual expansion (Telugu, Hindi, etc.)  
-- Deadline reminders and alerts  
-- Career and exam guidance  
-
----
-
-## 🏁 Why SamartAI Matters
-
-SamartAI demonstrates how AI can be used **not just to automate**, but to **guide, include, and empower**.
-
-By combining a modern web experience with a low-friction chat interface, SamartAI ensures that **opportunity reaches everyone—not just the digitally privileged**.
-
+```md
+<img src="assets/architecture.png" alt="SamartAI Architecture" width="100%"/>
