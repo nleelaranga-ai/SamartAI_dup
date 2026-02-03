@@ -17,7 +17,7 @@
 
 ## 🚀 Overview
 
-**SamartAI** is an accessibility-first AI platform that helps students discover **government scholarships**, understand **eligibility**, and receive **step-by-step guidance**—without navigating complex portals.
+**SamartAI** is an accessibility-first AI platform that helps students discover government scholarships, understand eligibility, and receive step-by-step guidance—without navigating complex portals.
 
 Unlike traditional scholarship portals that only list information, SamartAI **acts like a guide**.
 
@@ -44,9 +44,9 @@ Millions of eligible students miss scholarships not due to lack of merit, but be
 
 ## 💡 The Innovation
 
-- **Guidance-first AI** that understands intent and explains outcomes  
-- **Dual-platform design** to remove device and bandwidth barriers  
-- **Single intelligence layer** powering multiple access channels  
+- Guidance-first AI that understands intent and explains outcomes  
+- Dual-platform design to remove device and bandwidth barriers  
+- A single intelligence layer powering multiple access channels  
 
 This ensures **no student is excluded due to technology limitations**.
 
@@ -71,19 +71,19 @@ SamartAI follows a **shared-intelligence, multi-interface architecture**.
 
 ```mermaid
 flowchart TB
-    User([User])
+    User[User]
 
-    Web[🌐 Web App<br/>(React + TypeScript)]
-    Telegram[💬 Telegram Bot<br/>(Python Interface)]
+    Web[Web Application - React and TypeScript]
+    Telegram[Telegram Bot - Python Interface]
 
-    Backend[🤖 Shared AI Backend<br/>(Python + Flask)]
+    Backend[Shared AI Backend - Python and Flask]
 
     Intent[Intent Understanding]
     Eligibility[Eligibility Logic]
     Guidance[Guidance Engine]
     Context[Context Handling]
 
-    Data[(📚 Scholarship Knowledge Base<br/>Verified Datasets)]
+    Data[Scholarship Knowledge Base - Verified Datasets]
 
     User --> Web
     User --> Telegram
@@ -97,11 +97,6 @@ flowchart TB
     Backend --> Context
 
     Backend --> Data
-
-### Architecture Highlights
-- **Single Source of Intelligence** – consistent answers across platforms  
-- **Multiple Access Interfaces** – Web for rich UX, Telegram for low-bandwidth users  
-- **Guidance-first flow** – explain, clarify, and assist (not just list data)  
 
 ---
 
