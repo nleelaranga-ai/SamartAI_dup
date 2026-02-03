@@ -68,33 +68,35 @@ This ensures **no student is excluded due to technology limitations**.
 SamartAI follows a **shared-intelligence, multi-interface architecture**.
 
 > **One AI brain powers multiple access channels.**
-             ┌──────────────────────┐
-             │      Web App          │
-             │  (React + TypeScript) │
-             └──────────┬───────────┘
-                        │
-    User ───────────────►│
-                        │
-             ┌──────────▼───────────┐
-             │   Shared AI Backend   │
-             │   (Python + Flask)    │
-             │                       │
-             │ • Intent Understanding│
-             │ • Eligibility Logic   │
-             │ • Guidance Engine     │
-             │ • Context Handling    │
-             └──────────┬───────────┘
-                        │
-             ┌──────────▼───────────┐
-             │ Scholarship Knowledge │
-             │        Base           │
-             │ (Verified Datasets)   │
-             └──────────────────────┘
-                        ▲
-             ┌──────────┴───────────┐
-             │    Telegram Bot       │
-             │   (Python Interface)  │
-             └──────────────────────┘
+
+```mermaid
+flowchart TB
+    User([User])
+
+    Web[🌐 Web App<br/>(React + TypeScript)]
+    Telegram[💬 Telegram Bot<br/>(Python Interface)]
+
+    Backend[🤖 Shared AI Backend<br/>(Python + Flask)]
+
+    Intent[Intent Understanding]
+    Eligibility[Eligibility Logic]
+    Guidance[Guidance Engine]
+    Context[Context Handling]
+
+    Data[(📚 Scholarship Knowledge Base<br/>Verified Datasets)]
+
+    User --> Web
+    User --> Telegram
+
+    Web --> Backend
+    Telegram --> Backend
+
+    Backend --> Intent
+    Backend --> Eligibility
+    Backend --> Guidance
+    Backend --> Context
+
+    Backend --> Data
 
 ### Architecture Highlights
 - **Single Source of Intelligence** – consistent answers across platforms  
